@@ -2,10 +2,12 @@ import type { User } from "./types";
 
 import { createIoCContainer } from "./ioc";
 
-import IoCContainer from "ioc-lite";
+export const iocContainer = createIoCContainer();
 
-const renderUsers = async (ioc: IoCContainer) => {
-  const usersService = ioc.resolve("user");
+const renderUsers = async () => {
+  console.log(iocContainer);
+
+  const usersService = iocContainer.resolve("user");
   const users = await usersService.getUsers();
 
   const listNode = document.getElementById("users-list");
@@ -18,19 +20,18 @@ const renderUsers = async (ioc: IoCContainer) => {
   });
 };
 
-const app = (ioc: IoCContainer) => {
+const app = () => {
   delete (window as any).__CONFIG__;
 
-  renderUsers(ioc);
+  renderUsers();
 };
 
 window.onload = (event: Event) => {
+  const logger = iocContainer.resolve("logger");
   const config = (window as any).__CONFIG__;
-  const ioc = createIoCContainer(config.api);
-
-  const logger = ioc.resolve("logger");
+  iocContainer.register("apiConfig", config.api);
 
   logger.info("Page is loaded.");
 
-  app(ioc);
+  app();
 };
