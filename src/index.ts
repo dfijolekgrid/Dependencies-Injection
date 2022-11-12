@@ -2,35 +2,34 @@ import type { User } from "./types";
 
 import { createIoCContainer } from "./ioc";
 
-import IoCContainer from "ioc-lite";
+const config = (window as any).__CONFIG__;
+export const iocContainer = createIoCContainer();
+iocContainer.register("apiConfig", config);
 
-const renderUsers = async (ioc: IoCContainer) => {
-  const usersService = ioc.resolve("user");
-  const users = await usersService.getUsers();
+const renderUsers = async () => {
+    const usersService = iocContainer.resolve("user");
+    const users = await usersService.getUsers();
 
-  const listNode = document.getElementById("users-list");
+    const listNode = document.getElementById("users-list");
 
-  users.forEach((user: User) => {
-    const listItemNode = document.createElement("li");
+    users.forEach((user: User) => {
+        const listItemNode = document.createElement("li");
 
-    listItemNode.innerHTML = user.name;
-    listNode.appendChild(listItemNode);
-  });
+        listItemNode.innerHTML = user.name;
+        listNode.appendChild(listItemNode);
+    });
 };
 
-const app = (ioc: IoCContainer) => {
-  delete (window as any).__CONFIG__;
+const app = () => {
+    delete (window as any).__CONFIG__;
 
-  renderUsers(ioc);
+    renderUsers();
 };
 
 window.onload = (event: Event) => {
-  const config = (window as any).__CONFIG__;
-  const ioc = createIoCContainer(config.api);
+    const logger = iocContainer.resolve("logger");
 
-  const logger = ioc.resolve("logger");
+    logger.info("Page is loaded.");
 
-  logger.info("Page is loaded.");
-
-  app(ioc);
+    app();
 };
